@@ -1,6 +1,5 @@
 // === Datos de materias ===
-const materias = [
-  { codigo: "2503611", nombre: "Introducción a la ingeniería mecánica", nivel: 1, prerequisitos: [], correquisitos: [] },
+const materias = [{ codigo: "2503611", nombre: "Introducción a la ingeniería mecánica", nivel: 1, prerequisitos: [], correquisitos: [] },
   { codigo: "2505134", nombre: "Química general", nivel: 1, prerequisitos: [], correquisitos: [] },
   { codigo: "2536101", nombre: "Descubriendo la física", nivel: 1, prerequisitos: [], correquisitos: [] },
   { codigo: "2537101", nombre: "Vivamos la universidad", nivel: 1, prerequisitos: [], correquisitos: [] },
@@ -63,6 +62,78 @@ const materias = [
   { codigo: "2503693", nombre: "Fundamentos de administración", nivel: 9, prerequisitos: ["2503680"], correquisitos: [] },
   { codigo: "2503695", nombre: "Formulación y evaluación de proyectos", nivel: 9, prerequisitos: [], correquisitos: ["2503693"] }
 ];
+
+// === Renderizar la malla ===
+const mallaContainer = document.getElementById("malla");
+
+function renderMalla() {
+  mallaContainer.innerHTML = "";
+  const niveles = [...new Set(materias.map(m => m.nivel))].sort((a,b) => a-b);
+
+  niveles.forEach(nivel => {
+    const contenedor = document.createElement("div");
+    contenedor.classList.add("semestre");
+    contenedor.innerHTML = `<h2>Nivel ${nivel}</h2>`;
+
+    materias
+      .filter(m => m.nivel === nivel)
+      .forEach(m => {
+        const mat = document.createElement("div");
+        mat.classList.add("materia", "bloqueada");
+        mat.dataset.codigo = m.codigo;
+        mat.innerHTML = `<strong>${m.nombre}</strong><span> [${m.codigo}]</span>`;
+        contenedor.appendChild(mat);
+      });
+
+    mallaContainer.appendChild(contenedor);
+  });
+}
+
+function actualizarBloqueos() {
+  document.querySelectorAll(".materia").forEach(m => {
+    const codigo = m.dataset.codigo;
+    const materia = materias.find(mat => mat.codigo === codigo);
+    const aprobadas = getMateriasAprobadas();
+
+    const cumplePrerreq = materia.prerequisitos.every(p => aprobadas.includes(p));
+
+    if (cumplePrerreq) {
+      m.classList.remove("bloqueada");
+    } else {
+      m.classList.add("bloqueada");
+    }
+  });
+}
+
+function getMateriasAprobadas() {
+  return JSON.parse(localStorage.getItem("materiasAprobadas") || "[]");
+}
+
+function setMateriaAprobada(codigo) {
+  let aprobadas = getMateriasAprobadas();
+  if (!aprobadas.includes(codigo)) {
+    aprobadas.push(codigo);
+  } else {
+    aprobadas = aprobadas.filter(c => c !== codigo);
+  }
+  localStorage.setItem("materiasAprobadas", JSON.stringify(aprobadas));
+  pintarAprobadas();
+  actualizarBloqueos();
+}
+
+function pintarAprobadas() {
+  const aprobadas = getMateriasAprobadas();
+  document.querySelectorAll(".materia").forEach(m => {
+    const codigo = m.dataset.codigo;
+    if (aprobadas.includes(codigo)) {
+      m.classList.add("aprobada");
+    } else {
+      m.classList.remove("aprobada");
+    }
+  });
+}
+
+// === Ejecutar cuando cargue la página ===
 document.addEventListener("DOMContentLoaded", () => {
   renderMalla();
   pintarAprobadas();
@@ -78,5 +149,4 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 });
 
-// === Renderizar la malla ===
 
