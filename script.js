@@ -63,6 +63,20 @@ const materias = [
   { codigo: "2503693", nombre: "Fundamentos de administración", nivel: 9, prerequisitos: ["2503680"], correquisitos: [] },
   { codigo: "2503695", nombre: "Formulación y evaluación de proyectos", nivel: 9, prerequisitos: [], correquisitos: ["2503693"] }
 ];
+document.addEventListener("DOMContentLoaded", () => {
+  renderMalla();
+  pintarAprobadas();
+  actualizarBloqueos();
+
+  document.querySelectorAll(".materia").forEach(m => {
+    m.addEventListener("click", () => {
+      if (!m.classList.contains("bloqueada")) {
+        const codigo = m.dataset.codigo;
+        setMateriaAprobada(codigo);
+      }
+    });
+  });
+});
 
 // === Renderizar la malla ===
 
